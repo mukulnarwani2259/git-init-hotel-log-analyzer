@@ -22,9 +22,8 @@ jobs:
       with:
         context: .
         push: true
-        # This line is the most likely cause of the error. 
-        # I've ensured it uses the exact format Docker requires.
-        tags: ${{ secrets.DOCKER_USERNAME }}/hotel-log-analyzer:latest
+        # Hardcoding the username prefix to bypass the formatting error
+        tags: narwanimukul96/hotel-log-analyzer:latest
 
     - name: Set up Kubeconfig
       run: |
