@@ -1,25 +1,13 @@
-FROM python:3.12-slim
-
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
-
+# Stage 1: Build
+FROM node:20-alpine AS builder
 WORKDIR /app
-
-# System deps (optional but common for pandas)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
- && rm -rf /var/lib/apt/lists/*
-
-COPY requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
-
+COPY package*.json ./
+RUN npm ci
 COPY . .
+RUN npm run build
 
-# Security: run as non-root
-RUN useradd -m appuser
-USER appuser
-
-EXPOSE 8501
-
-CMD ["streamlit", "run", "app.py", "--server.address=0.0.0.0", "--server.port=8501"]
+# Stage 2: Serve
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
