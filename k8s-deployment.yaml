@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: hotel-log-analyzer
-          image: mukulnarwani2259/hotel-log-analyzer:latest # <--- FIXED LINE
+          image: mukulnarwani2259/hotel-log-analyzer:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8501
 ---
