@@ -1,32 +1,40 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hotel-log-analyzer
+  name: log-pattern-analyzer
+  labels:
+    app: log-pattern-analyzer
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: hotel-log-analyzer
+      app: log-pattern-analyzer
   template:
     metadata:
       labels:
-        app: hotel-log-analyzer
+        app: log-pattern-analyzer
     spec:
       containers:
-        - name: hotel-log-analyzer
-          image: mukulnarwani2259/hotel-log-analyzer:latest
-          imagePullPolicy: Always
+        - name: app
+          image: ghcr.io/YOUR_ORG/log-pattern-analyzer:latest
           ports:
-            - containerPort: 8501
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: hotel-log-analyzer-service
+  name: log-pattern-analyzer-svc
 spec:
-  type: LoadBalancer
+  selector:
+    app: log-pattern-analyzer
   ports:
     - port: 80
-      targetPort: 8501
-  selector:
-    app: hotel-log-analyzer
+      targetPort: 80
+  type: LoadBalancer
