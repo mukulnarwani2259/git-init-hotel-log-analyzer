@@ -24,11 +24,38 @@ jobs:
           push: true
           tags: mukulnarwani2259/hotel-log-analyzer:latest
 
-      - name: Set up Kubeconfig
-        run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+      # 1. Authenticate to Google Cloud (Replaces manual KUBECONFIG)
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
 
+      # 2. Install the necessary GKE auth plugin
+      - name: Set up Cloud SDK and Auth Plugin
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: 'gke-gcloud-auth-plugin'
+
+      # 3. Whitelist the GitHub Runner's IP (Crucial for Private Clusters)
+      - name: Whitelist GitHub Runner IP
+        run: |
+          RUNNER_IP=$(curl -s ifconfig.me)
+          echo "Whitelisting GitHub Runner IP: $RUNNER_IP"
+          gcloud container clusters update minimal-cluster \
+            --zone=us-central1-a \
+            --project=rubbyducky2 \
+            --enable-master-authorized-networks \
+            --master-authorized-networks=$RUNNER_IP/32
+
+      # 4. Generate the Kubeconfig automatically using the new plugin
+      - name: Get GKE Credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: 'minimal-cluster'
+          location: 'us-central1-a'
+          project_id: 'rubbyducky2'
+
+      # 5. Deploy your application
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f k8s-deployment.yaml
