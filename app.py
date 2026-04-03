@@ -14,7 +14,7 @@ log_input = st.text_area(
     placeholder="Paste your logs here...",
 )
 
-# Basic settings
+
 col1, col2 = st.columns([1, 1])
 with col1:
     ignore_case = st.checkbox("Ignore case", value=True)
